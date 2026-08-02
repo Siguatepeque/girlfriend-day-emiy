@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { layoutNextLine, prepareWithSegments } from '@chenglou/pretext'
 import './styles.css'
@@ -628,6 +628,16 @@ function drawQuill(ctx, x, y, scale, angle, time) {
 
 function App() {
   const canvasRef = useRef(null)
+  const [memoryOpen, setMemoryOpen] = useState(false)
+
+  useEffect(() => {
+    if (!memoryOpen) return undefined
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') setMemoryOpen(false)
+    }
+    addEventListener('keydown', closeOnEscape)
+    return () => removeEventListener('keydown', closeOnEscape)
+  }, [memoryOpen])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -699,14 +709,17 @@ function App() {
         }
         page.bottom = page.top + page.height
         const ratio = pageWidth / 700
-        const fontSize = Math.max(14, Math.round(21 * (.45 + .55 * ratio)))
-        const lineHeight = Math.max(22, Math.round(34 * (.45 + .55 * ratio)))
-        const font = `${fontSize}px ${FONT_STACK}`
         const pageMargin = Math.round(45 * ratio)
         const textLeft = page.left + pageMargin
         const textRight = page.right - pageMargin
         const bodyTop = page.top + pageMargin
         const bodyBottom = page.bottom - pageMargin
+        const availableTextArea = (textRight - textLeft) * (bodyBottom - bodyTop)
+        const preferredFontSize = 21 * (.45 + .55 * ratio)
+        const fittedFontSize = Math.sqrt(availableTextArea / (LETTER.length * .8)) * .9
+        const fontSize = Math.round(Math.max(compact ? 10.5 : 13, Math.min(preferredFontSize, fittedFontSize)) * 2) / 2
+        const lineHeight = Math.max(17, Math.round(fontSize * 1.55))
+        const font = `${fontSize}px ${FONT_STACK}`
 
         if (font !== currentFont) {
           prepared = prepareWithSegments(LETTER.slice(1), font, { whiteSpace: 'pre-wrap' })
@@ -755,8 +768,8 @@ function App() {
         const dropCapRect = {
           x: textLeft,
           y: bodyTop,
-          width: compact ? 86 : 112,
-          height: lineHeight * (compact ? 6.6 : 7)
+          width: Math.max(compact ? 54 : 78, fontSize * (compact ? 4.8 : 5.1)),
+          height: lineHeight * (compact ? 6 : 6.4)
         }
         const shapes = [...quillShapes, butterflyShape, ...garden.shapes]
 
@@ -781,16 +794,16 @@ function App() {
           slots = slots.filter(slot => slot.right - slot.left > minimumSlotWidth)
           if (!slots.length) { y += lineHeight; continue }
 
-          let exhausted = false
           for (const slot of slots) {
             const line = layoutNextLine(prepared, cursor, slot.right - slot.left)
-            if (!line) { exhausted = true; break }
+            // A narrow slot can reject the next word without meaning the letter is finished.
+            if (!line) continue
 
             ctx.fillStyle = '#302417'
             ctx.fillText(line.text, slot.left, y)
             cursor = line.end
           }
-          if (exhausted) break
+          if (!layoutNextLine(prepared, cursor, 100000)) break
           y += lineHeight
         }
         ctx.restore()
@@ -825,6 +838,40 @@ function App() {
   return (
     <main className="experience">
       <canvas ref={canvasRef} aria-label="An animated illustrated love letter for Emily" />
+      <button
+        className="memory-book"
+        type="button"
+        aria-label="Open our little manuscript"
+        aria-expanded={memoryOpen}
+        onClick={() => setMemoryOpen(true)}
+      >
+        <span className="memory-book__spine" />
+        <span className="memory-book__cover">our little<br />manuscript</span>
+        <span className="memory-book__pages" />
+      </button>
+
+      {memoryOpen && (
+        <div className="memory-overlay" role="presentation" onMouseDown={event => {
+          if (event.target === event.currentTarget) setMemoryOpen(false)
+        }}>
+          <div className="memory-spread" role="dialog" aria-modal="true" aria-label="A treasured memory">
+            <button className="memory-close" type="button" onClick={() => setMemoryOpen(false)} aria-label="Close manuscript">×</button>
+            <section className="memory-page memory-page--words">
+              <span className="memory-kicker">A TREASURED LEAF</span>
+              <h2>One bright moment,<br />kept here with you.</h2>
+              <p>Some memories deserve their own page. I love this one because it is simple, sunny, and ours.</p>
+              <div className="memory-flourish" aria-hidden="true">❦</div>
+              <small>For Emily, always toward the light.</small>
+            </section>
+            <figure className="memory-page memory-page--photo">
+              <div className="memory-photo-frame">
+                <img src={`${import.meta.env.BASE_URL}our-memory.png`} alt="Emily and me together beneath a tree" />
+              </div>
+              <figcaption>a day beneath green branches</figcaption>
+            </figure>
+          </div>
+        </div>
+      )}
       <div className="instruction"><i /> guide the quill · click the seed</div>
     </main>
   )
