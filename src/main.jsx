@@ -534,59 +534,94 @@ function drawQuill(ctx, x, y, scale, angle, time) {
   ctx.scale(scale, scale)
 
   const ink = '#171510'
-  ctx.fillStyle = ink
+
+  // Both vanes grow away from the cursor. The nib point remains at local (0, 0).
+  const upperVane = ctx.createLinearGradient(24, 0, 174, -20)
+  upperVane.addColorStop(0, '#c9c2b2')
+  upperVane.addColorStop(.42, '#65645f')
+  upperVane.addColorStop(1, '#1d2227')
+  ctx.fillStyle = upperVane
   ctx.strokeStyle = ink
-  ctx.lineWidth = 1.4
+  ctx.lineWidth = 1.5
   ctx.beginPath()
-  ctx.moveTo(-18, 0)
-  ctx.bezierCurveTo(-54, -40, -111, -51, -166, -28)
-  ctx.bezierCurveTo(-151, -14, -148, -7, -158, 0)
-  ctx.bezierCurveTo(-143, 2, -137, 7, -148, 15)
-  ctx.bezierCurveTo(-126, 14, -116, 19, -126, 28)
-  ctx.bezierCurveTo(-94, 23, -67, 17, -18, 0)
+  ctx.moveTo(24, 1)
+  ctx.bezierCurveTo(55, -39, 122, -55, 174, -19)
+  ctx.bezierCurveTo(137, -12, 82, -3, 24, 1)
   ctx.fill()
-
-  ctx.strokeStyle = '#eee5cf'
-  ctx.globalAlpha = .72
-  ctx.lineWidth = 1
-  for (let i = 0; i < 7; i++) {
-    const root = -142 + i * 17
-    ctx.beginPath()
-    ctx.moveTo(root, 1)
-    ctx.lineTo(root + 15, -18 - i * 1.1)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(root + 3, 3)
-    ctx.lineTo(root + 18, 15 + i * .5)
-    ctx.stroke()
-  }
-  ctx.globalAlpha = 1
-
-  ctx.strokeStyle = '#7d5520'
-  ctx.lineWidth = 3.2
-  ctx.beginPath()
-  ctx.moveTo(-154, 1)
-  ctx.quadraticCurveTo(-76, 5 + Math.sin(time * .002) * .7, -5, 0)
   ctx.stroke()
 
-  // The nib's point is exactly (0, 0), so it is the cursor rather than an ornament near it.
-  ctx.fillStyle = '#b98a2d'
-  ctx.strokeStyle = '#171510'
+  const lowerVane = ctx.createLinearGradient(25, 2, 168, 24)
+  lowerVane.addColorStop(0, '#bdb7aa')
+  lowerVane.addColorStop(.35, '#eee8da')
+  lowerVane.addColorStop(.78, '#92928c')
+  lowerVane.addColorStop(1, '#34383b')
+  ctx.fillStyle = lowerVane
+  ctx.beginPath()
+  ctx.moveTo(24, 1)
+  ctx.bezierCurveTo(76, 2, 132, -5, 174, -19)
+  ctx.bezierCurveTo(149, 11, 98, 38, 49, 31)
+  ctx.bezierCurveTo(34, 23, 27, 10, 24, 1)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.strokeStyle = 'rgba(37, 36, 32, .72)'
+  ctx.lineWidth = .9
+  for (let index = 0; index < 8; index++) {
+    const root = 42 + index * 16
+    const spineY = 2 - (root - 24) * .12
+    ctx.beginPath()
+    ctx.moveTo(root, spineY)
+    ctx.lineTo(root + 12, -24 - index * 1.2)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(root, spineY + 2)
+    ctx.lineTo(root + 13, 22 + index * .45)
+    ctx.stroke()
+  }
+
+  ctx.strokeStyle = '#d8d1b7'
+  ctx.lineWidth = 3.4
+  ctx.beginPath()
+  ctx.moveTo(18, 2)
+  ctx.quadraticCurveTo(87, 1 + Math.sin(time * .002) * .55, 171, -18)
+  ctx.stroke()
+  ctx.strokeStyle = '#525249'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.fillStyle = '#252a2d'
+  ctx.strokeStyle = '#111315'
+  ctx.lineWidth = 1.2
   ctx.beginPath()
   ctx.moveTo(0, 0)
-  ctx.lineTo(-20, -8)
-  ctx.lineTo(-30, 0)
-  ctx.lineTo(-20, 8)
+  ctx.lineTo(8, -8)
+  ctx.lineTo(22, -4)
+  ctx.lineTo(25, 2)
+  ctx.lineTo(11, 9)
   ctx.closePath()
   ctx.fill()
   ctx.stroke()
-  ctx.fillStyle = ink
+
+  ctx.fillStyle = '#ddd8c9'
   ctx.beginPath()
-  ctx.arc(-15, 0, 2.2, 0, Math.PI * 2)
+  ctx.arc(12, 1, 2.1, 0, Math.PI * 2)
   ctx.fill()
+  ctx.strokeStyle = '#d7d2c4'
+  ctx.lineWidth = .9
   ctx.beginPath()
   ctx.moveTo(0, 0)
-  ctx.lineTo(-15, 0)
+  ctx.lineTo(13, 1)
+  ctx.stroke()
+
+  ctx.fillStyle = '#a9a594'
+  ctx.strokeStyle = '#292b29'
+  ctx.beginPath()
+  ctx.moveTo(20, -4)
+  ctx.lineTo(31, -2)
+  ctx.lineTo(32, 5)
+  ctx.lineTo(22, 7)
+  ctx.closePath()
+  ctx.fill()
   ctx.stroke()
   ctx.restore()
 }
@@ -706,13 +741,13 @@ function App() {
           rx: compact ? 31 : 42,
           ry: compact ? 22 : 29
         }
-        const quillAngle = -.23 + Math.sin(now * .0011) * .018
+        const quillAngle = -.74 + Math.sin(now * .0011) * .018
         const quillLength = compact ? 104 : 144
         const quillShapes = Array.from({ length: 8 }, (_, index) => {
           const t = index / 7
           return {
-            x: pointer.x - Math.cos(quillAngle) * quillLength * t,
-            y: pointer.y - Math.sin(quillAngle) * quillLength * t,
+            x: pointer.x + Math.cos(quillAngle) * quillLength * t,
+            y: pointer.y + Math.sin(quillAngle) * quillLength * t,
             rx: (compact ? 9 : 13) + Math.sin(t * Math.PI) * (compact ? 7 : 10),
             ry: (compact ? 8 : 11) + Math.sin(t * Math.PI) * (compact ? 5 : 8)
           }
