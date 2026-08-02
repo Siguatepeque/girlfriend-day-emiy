@@ -2,17 +2,17 @@
 
 :root {
   color: #302417;
-  background: #eee3c5;
+  background: #f4eee0;
   font-family: 'IM FELL English', Georgia, 'Times New Roman', serif;
   font-synthesis: none;
 }
 
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-body { background: #eee3c5; }
+body { background: #f4eee0; }
 
 .experience { position: fixed; inset: 0; overflow: hidden; }
-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+canvas { display: block; width: 100%; height: 100%; cursor: none; touch-action: none; }
 
 .instruction,
 .signature {
@@ -27,7 +27,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-act
   mix-blend-mode: multiply;
 }
 
-.instruction { right: 43px; bottom: 57px; }
+.instruction { right: 22px; bottom: 18px; white-space: nowrap; }
 .instruction i {
   display: inline-block;
   width: 5px;
@@ -37,12 +37,8 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-act
   background: #a3462e;
   box-shadow: 0 0 0 3px rgba(163,70,46,.15);
 }
-.signature { left: 43px; bottom: 57px; }
-.signature span { color: #a46e1b; margin-left: 4px; }
-
 @media (max-width: 650px) {
-  .instruction { right: 44px; top: 121px; bottom: auto; max-width: 180px; text-align: right; }
-  .signature { display: none; }
+  .instruction { right: 16px; bottom: 10px; max-width: 170px; text-align: right; white-space: normal; }
 }
 
 @media (prefers-reduced-motion: reduce) {

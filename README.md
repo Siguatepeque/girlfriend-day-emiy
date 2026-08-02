@@ -9,4 +9,6 @@ npm install
 npm run dev
 ```
 
-The entire love letter is manually laid out on canvas. Every line is computed by Pretext against the live silhouettes of the moving sunflower bouquet, wandering moth, and wax heart charm, so the prose continuously opens and closes around the illustrations. Move the pointer to lead the flowers; hold to scatter petals.
+The entire love letter is manually laid out on canvas. Every line is computed by Pretext against the live silhouettes of the moving quill, blue butterfly, and growing sunflower, so the prose continuously opens and closes around the illustrations. Move the pointer to guide the quill, then click the seed to make it bloom.
+
+The centered manuscript composition and live obstacle-wrapping approach are adapted from [rivermarchand/illustrated-manuscript](https://github.com/rivermarchand/illustrated-manuscript), distributed under the ISC license. This version replaces the dragon with an original canvas-drawn quill, adds a blue butterfly, and introduces the interactive seed-to-sunflower bloom.

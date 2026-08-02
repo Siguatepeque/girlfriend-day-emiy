@@ -175,10 +175,7 @@ function drawBorderRosette(ctx, x, y, scale, color) {
   ctx.restore()
 }
 
-function drawIlluminatedBand(ctx, width, height) {
-  const left = 34
-  const top = 112
-  const bottom = height - 44
+function drawIlluminatedBand(ctx, left, top, bottom) {
   ctx.save()
   ctx.strokeStyle = '#b48726'
   ctx.lineWidth = 3
@@ -207,63 +204,45 @@ function drawIlluminatedBand(ctx, width, height) {
 
 function drawOrnateDropCap(ctx, rect, compact) {
   ctx.save()
-  const inset = compact ? 4 : 6
   const centerX = rect.x + rect.width / 2
   const centerY = rect.y + rect.height / 2
-  const wash = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height)
-  wash.addColorStop(0, 'rgba(236,197,80,.62)')
-  wash.addColorStop(.5, 'rgba(250,232,169,.7)')
-  wash.addColorStop(1, 'rgba(192,128,46,.48)')
-  ctx.fillStyle = wash
-  ctx.strokeStyle = '#872f28'
-  ctx.lineWidth = compact ? 2 : 3
+  ctx.strokeStyle = '#16130e'
+  ctx.lineWidth = compact ? 2.2 : 3.2
   ctx.beginPath()
-  ctx.roundRect(rect.x, rect.y, rect.width, rect.height, compact ? 5 : 7)
-  ctx.fill()
+  ctx.moveTo(rect.x + rect.width * .22, rect.y + rect.height * .92)
+  ctx.bezierCurveTo(rect.x - 10, rect.y + rect.height * .78, rect.x + 2, rect.y + rect.height * .25, rect.x + rect.width * .31, rect.y + rect.height * .1)
+  ctx.bezierCurveTo(rect.x + rect.width * .56, rect.y - 8, rect.x + rect.width * .9, rect.y + 3, rect.x + rect.width * .84, rect.y + rect.height * .24)
   ctx.stroke()
+  drawLeaf(ctx, rect.x + 4, rect.y + rect.height * .66, -.76, compact ? .48 : .7, '#9b3a2f')
+  drawLeaf(ctx, rect.x + rect.width * .75, rect.y + 11, 2.7, compact ? .4 : .6, '#a84937')
+  drawLeaf(ctx, rect.x + 9, rect.y + rect.height * .88, -.28, compact ? .34 : .5, '#9b3a2f')
 
-  ctx.strokeStyle = '#2d5268'
-  ctx.lineWidth = 1.3
-  ctx.strokeRect(rect.x + inset, rect.y + inset, rect.width - inset * 2, rect.height - inset * 2)
-  ctx.strokeStyle = '#c49a2b'
-  ctx.strokeRect(rect.x + inset + 4, rect.y + inset + 4, rect.width - inset * 2 - 8, rect.height - inset * 2 - 8)
+  ctx.strokeStyle = '#17140f'
+  ctx.lineWidth = compact ? 1.5 : 2.1
+  for (const [ox, oy, radius] of [[.18, .18, .14], [.78, .34, .12], [.22, .82, .11]]) {
+    ctx.beginPath()
+    ctx.arc(rect.x + rect.width * ox, rect.y + rect.height * oy, rect.width * radius, 0, Math.PI * 1.78)
+    ctx.stroke()
+  }
 
-  ctx.strokeStyle = '#1d1a13'
-  ctx.lineWidth = compact ? 2 : 3
-  ctx.beginPath()
-  ctx.moveTo(rect.x + 12, rect.y + rect.height - 14)
-  ctx.bezierCurveTo(rect.x - 7, rect.y + rect.height * .72, rect.x + 5, rect.y + 25, rect.x + 24, rect.y + 14)
-  ctx.bezierCurveTo(rect.x + 37, rect.y + 3, rect.x + rect.width - 9, rect.y + 9, rect.x + rect.width - 14, rect.y + 28)
-  ctx.stroke()
-  drawLeaf(ctx, rect.x + 9, rect.y + rect.height * .68, -.82, compact ? .48 : .65, '#96362d')
-  drawLeaf(ctx, rect.x + rect.width - 18, rect.y + 20, 2.62, compact ? .4 : .55, '#2d5d6f')
-  drawLeaf(ctx, rect.x + 14, rect.y + rect.height - 24, -.35, compact ? .38 : .5, '#58703c')
-
-  drawTinyStar(ctx, rect.x + 15, rect.y + 15, compact ? 3 : 4, '#9e332c', Math.PI / 4)
-  drawTinyStar(ctx, rect.x + rect.width - 15, rect.y + rect.height - 15, compact ? 3 : 4, '#31596f', 0)
-  drawSunEmblem(ctx, rect.x + rect.width - 17, rect.y + 18, compact ? .45 : .58)
-
-  ctx.shadowColor = 'rgba(255,231,130,.65)'
-  ctx.shadowBlur = 2
-  ctx.lineWidth = compact ? 1.2 : 1.8
-  ctx.strokeStyle = '#d4ad42'
+  ctx.shadowColor = 'rgba(244,238,221,.9)'
+  ctx.shadowBlur = 1
   ctx.fillStyle = '#17140f'
-  ctx.font = `700 ${rect.height * (compact ? .67 : .7)}px "UnifrakturCook", Georgia, serif`
+  ctx.font = `700 ${rect.height * (compact ? .72 : .74)}px "UnifrakturCook", Georgia, serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.strokeText('E', centerX, centerY + rect.height * .04)
-  ctx.fillText('E', centerX, centerY + rect.height * .04)
+  ctx.fillText('E', centerX, centerY + rect.height * .03)
   ctx.shadowBlur = 0
   ctx.restore()
 }
 
-function drawPaper(ctx, width, height, time) {
-  ctx.fillStyle = '#eee5cf'
+function drawPaper(ctx, width, height, time, page) {
+  ctx.fillStyle = '#f4eee0'
   ctx.fillRect(0, 0, width, height)
 
-  const glow = ctx.createRadialGradient(width * .48, height * .35, 20, width * .48, height * .35, width * .7)
-  glow.addColorStop(0, 'rgba(255,251,226,.72)')
-  glow.addColorStop(1, 'rgba(111,74,31,.12)')
+  const glow = ctx.createRadialGradient((page.left + page.right) / 2, page.top + page.height * .4, 30, (page.left + page.right) / 2, page.top + page.height * .4, page.width * .75)
+  glow.addColorStop(0, 'rgba(255,252,236,.45)')
+  glow.addColorStop(1, 'rgba(103,73,38,.035)')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, width, height)
 
@@ -276,46 +255,20 @@ function drawPaper(ctx, width, height, time) {
   }
   ctx.restore()
 
-  ctx.fillStyle = 'rgba(180,136,38,.18)'
-  ctx.fillRect(15, 15, width - 30, 13)
-  ctx.fillRect(15, height - 28, width - 30, 13)
-  ctx.strokeStyle = '#792e28'
-  ctx.lineWidth = 2
-  ctx.strokeRect(16, 16, width - 32, height - 32)
-  ctx.strokeStyle = '#b88c28'
-  ctx.lineWidth = 3
-  ctx.strokeRect(23, 23, width - 46, height - 46)
-  ctx.strokeStyle = '#31566d'
-  ctx.lineWidth = 1
-  ctx.strokeRect(29, 29, width - 58, height - 58)
-
-  drawIlluminatedCorner(ctx, 30, 30, 1, 1)
-  drawIlluminatedCorner(ctx, width - 30, 30, -1, 1)
-  drawIlluminatedCorner(ctx, 30, height - 30, 1, -1)
-  drawIlluminatedCorner(ctx, width - 30, height - 30, -1, -1)
-  drawIlluminatedBand(ctx, width, height)
-
-  drawVine(ctx, 31, height * .25, Math.min(155, height * .2), 1)
-  drawVine(ctx, width - 31, height * .58, Math.min(145, height * .18), -1)
-
-  ctx.fillStyle = 'rgba(152,72,43,.56)'
-  for (const [x, y, size] of [[36, height * .49, 1.5], [width - 37, height * .34, 1.3], [43, height * .72, 1], [width - 42, height * .8, 1]]) {
-    ctx.beginPath()
-    ctx.arc(x, y, size, 0, Math.PI * 2)
-    ctx.fill()
-  }
 }
 
-function drawHeader(ctx, width, compact) {
+function drawHeader(ctx, page, compact) {
+  const left = page.left + (compact ? 32 : 18)
+  const right = page.right - (compact ? 20 : 18)
   const top = compact ? 49 : 52
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = '#7f3a2c'
   ctx.font = `${compact ? 10 : 12}px "IM FELL English", Georgia, serif`
   ctx.letterSpacing = compact ? '2px' : '3px'
-  ctx.fillText(compact ? 'AN ILLUMINATED LETTER' : 'AN ILLUMINATED LETTER OF BRIGHT THINGS', 48, top)
+  ctx.fillText(compact ? 'AN ILLUMINATED LETTER' : 'AN ILLUMINATED LETTER OF BRIGHT THINGS', left, top)
   if (!compact) {
     ctx.textAlign = 'right'
-    ctx.fillText('FOLIO · VIII', width - 44, top)
+    ctx.fillText('FOLIO · VIII', right, top)
   }
   ctx.textAlign = 'left'
   ctx.letterSpacing = '0px'
@@ -323,52 +276,69 @@ function drawHeader(ctx, width, compact) {
   ctx.fillStyle = '#17150f'
   ctx.font = `700 ${compact ? 25 : 40}px "UnifrakturCook", Georgia, serif`
   if (compact) {
-    ctx.fillText('For Emily,', 48, top + 31)
+    ctx.fillText('For Emily,', left, top + 31)
     ctx.font = `italic 18px "IM FELL English", Georgia, serif`
-    ctx.fillText('who turns me toward the light', 48, top + 54)
+    ctx.fillText('who turns me toward the light', left, top + 54)
   } else {
-    ctx.fillText('For Emily, who turns me toward the light', 48, top + 43)
+    ctx.fillText('For Emily, who turns me toward the light', left, top + 43)
   }
 
   ctx.strokeStyle = '#ad741e'
   ctx.beginPath()
-  ctx.moveTo(48, top + (compact ? 68 : 58))
-  ctx.lineTo(width - 48, top + (compact ? 68 : 58))
+  ctx.moveTo(left, top + (compact ? 68 : 58))
+  ctx.lineTo(right, top + (compact ? 68 : 58))
   ctx.stroke()
 
-  const emblemX = compact ? width - 57 : width - 62
+  const emblemX = right - (compact ? 9 : 5)
   const emblemY = top + (compact ? 48 : 34)
   drawSunEmblem(ctx, emblemX, emblemY, compact ? .7 : .85)
-  drawTinyStar(ctx, compact ? 31 : 28, top + (compact ? 47 : 32), compact ? 3 : 4, '#a66f1f', .35)
-  drawTinyStar(ctx, compact ? width - 30 : width - 29, top + (compact ? 13 : 16), 2.4, '#92402e', .2)
+  drawTinyStar(ctx, left - 14, top + (compact ? 47 : 32), compact ? 3 : 4, '#a66f1f', .35)
+  drawTinyStar(ctx, right + 9, top + (compact ? 13 : 16), 2.4, '#92402e', .2)
   ctx.fillStyle = '#a06b26'
   for (let i = 0; i < 3; i++) {
     ctx.beginPath()
-    ctx.arc((compact ? 40 : 43) + i * 8, top + (compact ? 62 : 51), 1.1 - i * .15, 0, Math.PI * 2)
+    ctx.arc(left - 8 + i * 8, top + (compact ? 62 : 51), 1.1 - i * .15, 0, Math.PI * 2)
     ctx.fill()
   }
 }
 
-function drawFooter(ctx, width, height, compact) {
+function drawFooter(ctx, page, height, compact) {
   ctx.fillStyle = '#815130'
   ctx.font = `${compact ? 9 : 11}px "IM FELL English", Georgia, serif`
   ctx.textAlign = 'center'
   ctx.letterSpacing = '2.2px'
-  ctx.fillText(compact ? 'EMILY  ·  GIRLFRIEND DAY  ·  VIII' : 'HAPPY GIRLFRIEND DAY  ·  EMILY  ·  ALWAYS TOWARD THE SUN', width / 2, height - 38)
+  ctx.fillText(compact ? 'EMILY  ·  GIRLFRIEND DAY  ·  VIII' : 'HAPPY GIRLFRIEND DAY  ·  EMILY  ·  ALWAYS TOWARD THE SUN', (page.left + page.right) / 2, height - 38)
   ctx.textAlign = 'left'
   ctx.letterSpacing = '0px'
 }
 
-function drawSunflower(ctx, image, x, y, scale, rotation, flip = false) {
+function drawBloomingSunflower(ctx, image, x, bottomY, finalScale, bloom, time) {
+  const eased = 1 - Math.pow(1 - bloom, 3)
+  if (eased < .035) {
+    ctx.save()
+    ctx.translate(x, bottomY - 7)
+    ctx.rotate(-.28)
+    ctx.fillStyle = '#3b3021'
+    ctx.strokeStyle = '#17140f'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.ellipse(0, 0, 6, 11, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    ctx.restore()
+    return
+  }
+  const scaleX = finalScale * eased
+  const scaleY = finalScale * (.08 + eased * .92)
   ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(rotation)
-  ctx.scale(flip ? -scale : scale, scale)
-  ctx.drawImage(image, -90, -132, 180, 264)
+  ctx.translate(x, bottomY)
+  ctx.rotate(Math.sin(time * .0011) * .025 * eased)
+  ctx.scale(scaleX, scaleY)
+  ctx.drawImage(image, -90, -264, 180, 264)
   ctx.restore()
 }
 
-function drawMoth(ctx, image, x, y, scale, angle, wing) {
+function drawButterfly(ctx, image, x, y, scale, angle, wing) {
   ctx.save()
   ctx.translate(x, y)
   ctx.rotate(angle)
@@ -377,12 +347,56 @@ function drawMoth(ctx, image, x, y, scale, angle, wing) {
   ctx.restore()
 }
 
-function drawCharm(ctx, image, x, y, scale, angle) {
+function drawPen(ctx, x, y, scale, angle) {
   ctx.save()
   ctx.translate(x, y)
   ctx.rotate(angle)
   ctx.scale(scale, scale)
-  ctx.drawImage(image, -55, -72, 110, 144)
+
+  const ink = '#171510'
+  ctx.fillStyle = ink
+  ctx.strokeStyle = ink
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.moveTo(-76, 4)
+  ctx.bezierCurveTo(-56, -24, -20, -28, 34, -9)
+  ctx.bezierCurveTo(5, -5, -20, 4, -70, 15)
+  ctx.bezierCurveTo(-59, 11, -49, 8, -36, 6)
+  ctx.bezierCurveTo(-50, 4, -63, 4, -76, 4)
+  ctx.fill()
+
+  ctx.strokeStyle = '#eee5cf'
+  ctx.globalAlpha = .8
+  ctx.lineWidth = 1
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath()
+    ctx.moveTo(-56 + i * 13, 2)
+    ctx.lineTo(-42 + i * 13, -13 + i * .5)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(-52 + i * 13, 5)
+    ctx.lineTo(-37 + i * 13, 12 - i * .4)
+    ctx.stroke()
+  }
+  ctx.globalAlpha = 1
+
+  ctx.strokeStyle = '#7d5520'
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.moveTo(-66, 7)
+  ctx.lineTo(62, 0)
+  ctx.stroke()
+  ctx.fillStyle = '#b98a2d'
+  ctx.beginPath()
+  ctx.moveTo(62, 0)
+  ctx.lineTo(76, -5)
+  ctx.lineTo(70, 6)
+  ctx.closePath()
+  ctx.fill()
+  ctx.fillStyle = ink
+  ctx.beginPath()
+  ctx.arc(73, 0, 1.7, 0, Math.PI * 2)
+  ctx.fill()
   ctx.restore()
 }
 
@@ -394,17 +408,17 @@ function App() {
     const ctx = canvas.getContext('2d', { alpha: false })
     let frame = 0
     let alive = true
-    let down = false
     let last = performance.now()
     let currentFont = ''
     let prepared = null
-    let petals = []
-    const pointer = { x: innerWidth * .72, y: innerHeight * .42, tx: innerWidth * .72, ty: innerHeight * .42, active: false }
+    let bloom = 0
+    let bloomTarget = 0
+    const sunflowerHit = { x: 0, y: 0, radius: 60 }
+    const pointer = { x: innerWidth * .5, y: innerHeight * .45, tx: innerWidth * .5, ty: innerHeight * .45, active: false, angle: -.08 }
 
     const imagesPromise = Promise.all([
       loadImage(`${import.meta.env.BASE_URL}sunflower.svg`),
       loadImage(`${import.meta.env.BASE_URL}moth.svg`),
-      loadImage(`${import.meta.env.BASE_URL}heart-charm.svg`),
       document.fonts.ready
     ])
 
@@ -428,17 +442,19 @@ function App() {
       if (!event.touches[0]) return
       setPointer(event.touches[0].clientX, event.touches[0].clientY)
     }
-    const press = () => { down = true }
-    const release = () => { down = false }
+    const press = event => {
+      setPointer(event.clientX, event.clientY)
+      const distance = Math.hypot(event.clientX - sunflowerHit.x, event.clientY - sunflowerHit.y)
+      if (distance <= sunflowerHit.radius) bloomTarget = 1
+    }
 
     addEventListener('resize', resize)
     canvas.addEventListener('pointermove', move)
     canvas.addEventListener('pointerdown', press)
-    addEventListener('pointerup', release)
     canvas.addEventListener('touchmove', touchMove, { passive: true })
     resize()
 
-    imagesPromise.then(([sunflower, moth, charm]) => {
+    imagesPromise.then(([sunflower, butterfly]) => {
       const render = now => {
         if (!alive) return
         const dt = Math.min(32, now - last)
@@ -446,12 +462,25 @@ function App() {
         const width = innerWidth
         const height = innerHeight
         const compact = width < 650
-        const fontSize = compact ? Math.max(14, Math.min(17, width / 24)) : Math.max(18, Math.min(23, width / 66))
-        const lineHeight = fontSize * (compact ? 1.42 : 1.48)
+        const pageWidth = Math.min(700, width - 40)
+        const pageHeight = Math.min(920, height - 40)
+        const page = {
+          left: (width - pageWidth) / 2,
+          right: (width + pageWidth) / 2,
+          top: Math.max(20, (height - pageHeight) / 2),
+          width: pageWidth,
+          height: pageHeight
+        }
+        page.bottom = page.top + page.height
+        const ratio = pageWidth / 700
+        const fontSize = Math.max(14, Math.round(21 * (.45 + .55 * ratio)))
+        const lineHeight = Math.max(22, Math.round(34 * (.45 + .55 * ratio)))
         const font = `${fontSize}px ${FONT_STACK}`
-        const margin = compact ? 48 : Math.max(72, width * .052)
-        const bodyTop = compact ? 155 : 162
-        const bodyBottom = height - (compact ? 82 : 58)
+        const pageMargin = Math.round(45 * ratio)
+        const textLeft = page.left + pageMargin
+        const textRight = page.right - pageMargin
+        const bodyTop = page.top + pageMargin
+        const bodyBottom = page.bottom - pageMargin
 
         if (font !== currentFont) {
           prepared = prepareWithSegments(LETTER.slice(1), font, { whiteSpace: 'pre-wrap' })
@@ -459,61 +488,57 @@ function App() {
         }
 
         if (!pointer.active) {
-          pointer.tx = width * .7 + Math.sin(now * .00027) * width * .13
-          pointer.ty = height * .42 + Math.cos(now * .00021) * height * .14
+          pointer.tx = page.left + page.width * .58 + Math.sin(now * .00027) * page.width * .12
+          pointer.ty = bodyTop + (bodyBottom - bodyTop) * .42 + Math.cos(now * .00021) * 46
         }
+        const pointerDx = pointer.tx - pointer.x
+        const pointerDy = pointer.ty - pointer.y
         pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * .008)
         pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * .008)
+        const targetAngle = Math.atan2(pointerDy, pointerDx || 1) * .12 - .08
+        pointer.angle += (targetAngle - pointer.angle) * .12
 
-        const bouquetScale = compact ? .62 : .9
-        const bouquet = {
-          x: Math.max(margin + 70, Math.min(width - margin - 70, pointer.x)),
-          y: Math.max(bodyTop + 80, Math.min(bodyBottom - 90, pointer.y)),
-          rx: 118 * bouquetScale,
-          ry: 145 * bouquetScale
+        bloom += (bloomTarget - bloom) * Math.min(1, dt * .0048)
+        const bloomEase = 1 - Math.pow(1 - bloom, 3)
+        const sunflowerFinalScale = compact ? .52 : .68
+        const sunflowerScale = sunflowerFinalScale * bloomEase
+        const sunflowerX = textRight - (compact ? 16 : 24)
+        const sunflowerBottom = bodyBottom + 8
+        const sunflowerShape = {
+          x: sunflowerX,
+          y: sunflowerBottom - 132 * sunflowerScale,
+          rx: Math.max(8, 86 * sunflowerScale),
+          ry: Math.max(12, 132 * sunflowerScale)
         }
-        const mothShape = {
-          x: width * .5 + Math.cos(now * .00042) * width * .34,
-          y: bodyTop + (height - bodyTop - 90) * (.48 + Math.sin(now * .00063) * .34),
-          rx: compact ? 33 : 48,
-          ry: compact ? 24 : 34
-        }
-        const charmShape = {
-          x: margin + (width - margin * 2) * (.25 + Math.sin(now * .00019 + 2) * .16),
-          y: bodyTop + (height - bodyTop - 90) * (.72 + Math.cos(now * .00031) * .12),
-          rx: compact ? 31 : 43,
-          ry: compact ? 42 : 58
-        }
-        const dropCapRect = {
-          x: margin,
-          y: bodyTop,
-          width: compact ? 86 : 126,
-          height: lineHeight * (compact ? 5.1 : 5.35)
-        }
-        const shapes = [bouquet, mothShape, charmShape]
+        sunflowerHit.x = sunflowerX
+        sunflowerHit.y = bloomTarget ? sunflowerBottom - 92 * sunflowerFinalScale : sunflowerBottom - 7
+        sunflowerHit.radius = bloomTarget ? (compact ? 54 : 68) : 24
 
-        if (down && Math.random() < .34) {
-          petals.push({
-            x: bouquet.x + (Math.random() - .5) * bouquet.rx,
-            y: bouquet.y - bouquet.ry * .5,
-            vx: (Math.random() - .5) * 1.8,
-            vy: -1 - Math.random() * 1.4,
-            spin: (Math.random() - .5) * .15,
-            angle: Math.random() * Math.PI,
-            life: 1
-          })
+        const butterflyShape = {
+          x: page.left + page.width * (.47 + Math.cos(now * .00042) * .28),
+          y: bodyTop + (bodyBottom - bodyTop) * (.48 + Math.sin(now * .00063) * .27),
+          rx: compact ? 31 : 42,
+          ry: compact ? 22 : 29
         }
-        petals = petals.filter(petal => petal.life > 0)
-        petals.forEach(petal => {
-          petal.x += petal.vx * dt * .06
-          petal.y += petal.vy * dt * .06
-          petal.vy += .025 * dt * .06
-          petal.angle += petal.spin
-          petal.life -= .005 * dt
+        const penLength = compact ? 88 : 128
+        const penShapes = Array.from({ length: 6 }, (_, index) => {
+          const t = index / 5 - .5
+          return {
+            x: pointer.x + Math.cos(pointer.angle) * penLength * t,
+            y: pointer.y + Math.sin(pointer.angle) * penLength * t,
+            rx: compact ? 13 : 18,
+            ry: compact ? 11 : 15
+          }
         })
+        const dropCapRect = {
+          x: textLeft,
+          y: bodyTop,
+          width: compact ? 86 : 112,
+          height: lineHeight * (compact ? 6.6 : 7)
+        }
+        const shapes = [...penShapes, butterflyShape, sunflowerShape]
 
-        drawPaper(ctx, width, height, now)
-        drawHeader(ctx, width, compact)
+        drawPaper(ctx, width, height, now, page)
 
         ctx.save()
         ctx.font = font
@@ -523,7 +548,7 @@ function App() {
         let y = bodyTop
 
         while (y + lineHeight <= bodyBottom) {
-          let slots = [{ left: margin, right: width - margin }]
+          let slots = [{ left: textLeft, right: textRight }]
           for (const shape of shapes) {
             const interval = ellipseInterval(shape, y, y + lineHeight, compact ? 7 : 11)
             if (interval) slots = carve(slots, interval)
@@ -550,26 +575,16 @@ function App() {
 
         drawOrnateDropCap(ctx, dropCapRect, compact)
 
-        const sway = Math.sin(now * .0013) * .045
-        drawSunflower(ctx, sunflower, bouquet.x - 52 * bouquetScale, bouquet.y + 7, bouquetScale * .8, sway - .14, true)
-        drawSunflower(ctx, sunflower, bouquet.x + 45 * bouquetScale, bouquet.y + 10, bouquetScale * .74, -sway + .15)
-        drawSunflower(ctx, sunflower, bouquet.x, bouquet.y - 22 * bouquetScale, bouquetScale, sway)
-        drawMoth(ctx, moth, mothShape.x, mothShape.y, compact ? .55 : .76, Math.sin(now * .0009) * .25, .5 + Math.sin(now * .013) * .5)
-        drawCharm(ctx, charm, charmShape.x, charmShape.y, compact ? .6 : .82, Math.sin(now * .0011) * .12)
+        drawBloomingSunflower(ctx, sunflower, sunflowerX, sunflowerBottom, sunflowerFinalScale, bloom, now)
+        drawButterfly(ctx, butterfly, butterflyShape.x, butterflyShape.y, compact ? .53 : .68, Math.sin(now * .0009) * .25, .5 + Math.sin(now * .013) * .5)
+        drawPen(ctx, pointer.x, pointer.y, compact ? .62 : .82, pointer.angle)
 
-        for (const petal of petals) {
-          ctx.save()
-          ctx.globalAlpha = petal.life
-          ctx.translate(petal.x, petal.y)
-          ctx.rotate(petal.angle)
-          ctx.fillStyle = Math.random() > .5 ? '#e5ab25' : '#c96f1d'
-          ctx.beginPath()
-          ctx.ellipse(0, 0, 8, 3, 0, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.restore()
-        }
-
-        drawFooter(ctx, width, height, compact)
+        ctx.save()
+        ctx.fillStyle = '#2a1a0a'
+        ctx.font = `${compact ? 11 : 13}px "IM FELL English", Georgia, serif`
+        ctx.textAlign = 'center'
+        ctx.fillText('For Emily', (page.left + page.right) / 2, page.bottom - 8)
+        ctx.restore()
         frame = requestAnimationFrame(render)
       }
       frame = requestAnimationFrame(render)
@@ -581,7 +596,6 @@ function App() {
       removeEventListener('resize', resize)
       canvas.removeEventListener('pointermove', move)
       canvas.removeEventListener('pointerdown', press)
-      removeEventListener('pointerup', release)
       canvas.removeEventListener('touchmove', touchMove)
     }
   }, [])
@@ -589,8 +603,7 @@ function App() {
   return (
     <main className="experience">
       <canvas ref={canvasRef} aria-label="An animated illustrated love letter for Emily" />
-      <div className="instruction"><i /> move the flowers · hold to scatter petals</div>
-      <div className="signature">written in sunlight <span>☼</span></div>
+      <div className="instruction"><i /> guide the quill · click the seed</div>
     </main>
   )
 }
