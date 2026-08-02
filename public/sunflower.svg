@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 264">
+  <defs>
+    <filter id="paper" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence baseFrequency=".035" numOctaves="2" seed="8" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8"/>
+    </filter>
+    <linearGradient id="stem" x1="0" x2="1"><stop stop-color="#293d26"/><stop offset=".48" stop-color="#6f7840"/><stop offset="1" stop-color="#263923"/></linearGradient>
+    <radialGradient id="gold"><stop stop-color="#f6cf45"/><stop offset=".62" stop-color="#dfa020"/><stop offset="1" stop-color="#ad5d17"/></radialGradient>
+    <radialGradient id="heart"><stop stop-color="#bf7920"/><stop offset=".25" stop-color="#5a3417"/><stop offset=".58" stop-color="#2f2114"/><stop offset=".78" stop-color="#82521e"/><stop offset="1" stop-color="#332114"/></radialGradient>
+  </defs>
+  <g filter="url(#paper)">
+    <path d="M91 103C85 145 91 210 86 264" fill="none" stroke="url(#stem)" stroke-width="9" stroke-linecap="round"/>
+    <path d="M89 168C65 145 40 148 24 165c25 14 48 10 65 3Z" fill="#506234" stroke="#304126" stroke-width="2"/>
+    <path d="M88 205c22-23 48-23 66-6-23 16-47 16-66 6Z" fill="#5f7139" stroke="#304126" stroke-width="2"/>
+    <g transform="translate(90 80)">
+      <g fill="url(#gold)" stroke="#b66a18" stroke-width="1">
+        <ellipse rx="11" ry="44" transform="rotate(0) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(22.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(45) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(67.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(90) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(112.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(135) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(157.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(180) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(202.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(225) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(247.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(270) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(292.5) translate(0 -35)"/>
+        <ellipse rx="11" ry="44" transform="rotate(315) translate(0 -35)"/><ellipse rx="11" ry="44" transform="rotate(337.5) translate(0 -35)"/>
+      </g>
+      <circle r="31" fill="url(#heart)" stroke="#3c2815" stroke-width="3"/>
+      <circle r="20" fill="none" stroke="#b47b2d" stroke-width="2" stroke-dasharray="1 4"/>
+      <circle r="11" fill="none" stroke="#8f6125" stroke-width="2" stroke-dasharray="1 3"/>
+    </g>
+  </g>
+</svg>

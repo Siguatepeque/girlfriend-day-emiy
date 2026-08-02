@@ -1,0 +1,48 @@
+:root {
+  color: #302417;
+  background: #eee3c5;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+body { background: #eee3c5; }
+
+.experience { position: fixed; inset: 0; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+
+.instruction,
+.signature {
+  position: fixed;
+  z-index: 2;
+  color: rgba(70, 48, 28, .7);
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: .08em;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.instruction { right: 43px; bottom: 57px; }
+.instruction i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 7px 1px 0;
+  border-radius: 50%;
+  background: #a3462e;
+  box-shadow: 0 0 0 3px rgba(163,70,46,.15);
+}
+.signature { left: 43px; bottom: 57px; }
+.signature span { color: #a46e1b; margin-left: 4px; }
+
+@media (max-width: 650px) {
+  .instruction { right: 44px; top: 121px; bottom: auto; max-width: 180px; text-align: right; }
+  .signature { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  canvas { cursor: default; }
+  .instruction::after { content: ' · motion follows your pointer gently'; }
+}
