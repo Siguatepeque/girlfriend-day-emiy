@@ -42,6 +42,6 @@ canvas { display: block; width: 100%; height: 100%; cursor: none; touch-action: 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  canvas { cursor: default; }
+  canvas { cursor: none; }
   .instruction::after { content: ' · motion follows your pointer gently'; }
 }

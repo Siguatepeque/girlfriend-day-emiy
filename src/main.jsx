@@ -312,30 +312,210 @@ function drawFooter(ctx, page, height, compact) {
   ctx.letterSpacing = '0px'
 }
 
-function drawBloomingSunflower(ctx, image, x, bottomY, finalScale, bloom, time) {
-  const eased = 1 - Math.pow(1 - bloom, 3)
-  if (eased < .035) {
-    ctx.save()
-    ctx.translate(x, bottomY - 7)
-    ctx.rotate(-.28)
-    ctx.fillStyle = '#3b3021'
-    ctx.strokeStyle = '#17140f'
-    ctx.lineWidth = 1
+const clamp01 = value => Math.max(0, Math.min(1, value))
+
+function cubicPoint(curve, t) {
+  const u = 1 - t
+  return {
+    x: u ** 3 * curve.start.x + 3 * u ** 2 * t * curve.c1.x + 3 * u * t ** 2 * curve.c2.x + t ** 3 * curve.end.x,
+    y: u ** 3 * curve.start.y + 3 * u ** 2 * t * curve.c1.y + 3 * u * t ** 2 * curve.c2.y + t ** 3 * curve.end.y
+  }
+}
+
+function buildGarden(seed, bounds, growth, compact) {
+  const spanX = bounds.right - bounds.left
+  const spanY = bounds.bottom - bounds.top
+  const specs = [
+    { end: [.05, .29], c1: [-.09, -.1], c2: [.16, .38], delay: 0 },
+    { end: [.91, .08], c1: [.13, -.12], c2: [.79, .31], delay: .07 },
+    { end: [.05, .89], c1: [-.14, .13], c2: [.19, .69], delay: .14 },
+    { end: [.93, .91], c1: [.13, .15], c2: [.78, .72], delay: .21 }
+  ]
+  const branches = specs.map((spec, index) => {
+    const progress = clamp01((growth - spec.delay) / (1 - spec.delay))
+    const curve = {
+      start: seed,
+      c1: { x: seed.x + spec.c1[0] * spanX, y: seed.y + spec.c1[1] * spanY },
+      c2: { x: bounds.left + spec.c2[0] * spanX, y: bounds.top + spec.c2[1] * spanY },
+      end: { x: bounds.left + spec.end[0] * spanX, y: bounds.top + spec.end[1] * spanY }
+    }
+    const points = []
+    const steps = Math.max(1, Math.ceil(progress * 24))
+    for (let step = 0; step <= steps; step++) {
+      points.push(cubicPoint(curve, progress * step / steps))
+    }
+    const leafFractions = [.29, .51, .72].map((t, leafIndex) => ({
+      t,
+      side: (leafIndex + index) % 2 ? 1 : -1,
+      reveal: clamp01((progress - t) * 8)
+    })).filter(leaf => leaf.reveal > 0)
+    return { curve, progress, points, leaves: leafFractions, index }
+  })
+
+  const shapes = [{ x: seed.x, y: seed.y, rx: compact ? 10 : 13, ry: compact ? 14 : 17 }]
+  for (const branch of branches) {
+    for (let index = 1; index < branch.points.length; index += 2) {
+      const point = branch.points[index]
+      shapes.push({ x: point.x, y: point.y, rx: compact ? 6 : 8, ry: compact ? 7 : 9 })
+    }
+    for (const leaf of branch.leaves) {
+      const point = cubicPoint(branch.curve, leaf.t)
+      shapes.push({
+        x: point.x,
+        y: point.y,
+        rx: (compact ? 15 : 23) * leaf.reveal,
+        ry: (compact ? 10 : 15) * leaf.reveal
+      })
+    }
+    if (branch.progress > .84) {
+      const flowerReveal = clamp01((branch.progress - .84) / .16)
+      shapes.push({
+        x: branch.curve.end.x,
+        y: branch.curve.end.y,
+        rx: (compact ? 27 : 39) * flowerReveal,
+        ry: (compact ? 25 : 36) * flowerReveal
+      })
+    }
+  }
+  return { seed, branches, shapes, growth }
+}
+
+function drawSeed(ctx, seed, growth) {
+  ctx.save()
+  ctx.translate(seed.x, seed.y)
+  ctx.rotate(-.3)
+  ctx.fillStyle = '#30271d'
+  ctx.strokeStyle = '#14120e'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.ellipse(0, 0, 7, 12, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.stroke()
+  if (growth > .015) {
+    ctx.strokeStyle = '#eadfc8'
     ctx.beginPath()
-    ctx.ellipse(0, 0, 6, 11, 0, 0, Math.PI * 2)
+    ctx.moveTo(-2, -10)
+    ctx.lineTo(1, -3)
+    ctx.lineTo(-2, 3)
+    ctx.lineTo(2, 9)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+function drawSunflowerHead(ctx, x, y, size, rotation = 0) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(rotation)
+
+  const outerGold = ctx.createRadialGradient(0, -size * .22, 1, 0, 0, size * .52)
+  outerGold.addColorStop(0, '#f7d14b')
+  outerGold.addColorStop(.58, '#dfa020')
+  outerGold.addColorStop(1, '#a95716')
+  ctx.fillStyle = outerGold
+  ctx.strokeStyle = '#a55c18'
+  ctx.lineWidth = Math.max(.7, size * .012)
+  for (let index = 0; index < 16; index++) {
+    ctx.save()
+    ctx.rotate(index * Math.PI / 8)
+    ctx.beginPath()
+    ctx.ellipse(0, -size * .31, size * .075, size * .24, 0, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
     ctx.restore()
-    return
   }
-  const scaleX = finalScale * eased
-  const scaleY = finalScale * (.08 + eased * .92)
-  ctx.save()
-  ctx.translate(x, bottomY)
-  ctx.rotate(Math.sin(time * .0011) * .025 * eased)
-  ctx.scale(scaleX, scaleY)
-  ctx.drawImage(image, -90, -264, 180, 264)
+
+  ctx.fillStyle = '#e8ad25'
+  ctx.globalAlpha = .9
+  for (let index = 0; index < 12; index++) {
+    ctx.save()
+    ctx.rotate(index * Math.PI / 6 + Math.PI / 12)
+    ctx.beginPath()
+    ctx.ellipse(0, -size * .245, size * .06, size * .18, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+  ctx.globalAlpha = 1
+
+  const center = ctx.createRadialGradient(-size * .05, -size * .06, 1, 0, 0, size * .25)
+  center.addColorStop(0, '#b97a24')
+  center.addColorStop(.35, '#66401c')
+  center.addColorStop(1, '#2d2118')
+  ctx.fillStyle = center
+  ctx.strokeStyle = '#241a12'
+  ctx.lineWidth = Math.max(1, size * .018)
+  ctx.beginPath()
+  ctx.arc(0, 0, size * .225, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.fillStyle = '#d39b35'
+  for (let ring = 1; ring <= 3; ring++) {
+    const dots = ring * 8
+    for (let dot = 0; dot < dots; dot++) {
+      const angle = dot * Math.PI * 2 / dots + ring * .42
+      const radius = size * .047 * ring
+      ctx.beginPath()
+      ctx.arc(Math.cos(angle) * radius, Math.sin(angle) * radius, Math.max(.55, size * .008), 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
   ctx.restore()
+}
+
+function drawGarden(ctx, _image, garden, compact, time) {
+  drawSeed(ctx, garden.seed, garden.growth)
+  for (const branch of garden.branches) {
+    if (!branch.progress) continue
+    ctx.save()
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = '#31522d'
+    ctx.lineWidth = compact ? 3 : 4.2
+    ctx.beginPath()
+    branch.points.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y))
+    ctx.stroke()
+    ctx.strokeStyle = 'rgba(119, 139, 72, .72)'
+    ctx.lineWidth = compact ? .8 : 1.1
+    ctx.stroke()
+
+    for (const leaf of branch.leaves) {
+      const point = cubicPoint(branch.curve, leaf.t)
+      const ahead = cubicPoint(branch.curve, Math.min(1, leaf.t + .015))
+      const angle = Math.atan2(ahead.y - point.y, ahead.x - point.x) + leaf.side * 1.05
+      ctx.save()
+      ctx.translate(point.x, point.y)
+      ctx.rotate(angle)
+      ctx.scale(leaf.reveal * (compact ? .72 : 1), leaf.reveal * (compact ? .72 : 1))
+      drawLeaf(ctx, 0, 0, 0, 1.22, '#4f672f')
+      ctx.restore()
+
+      const tendrilLength = (compact ? 12 : 18) * leaf.reveal
+      ctx.strokeStyle = 'rgba(49, 82, 45, .82)'
+      ctx.lineWidth = compact ? 1 : 1.4
+      ctx.beginPath()
+      ctx.moveTo(point.x, point.y)
+      ctx.quadraticCurveTo(
+        point.x + Math.cos(angle + leaf.side * .7) * tendrilLength,
+        point.y + Math.sin(angle + leaf.side * .7) * tendrilLength,
+        point.x + Math.cos(angle + leaf.side * 1.35) * tendrilLength * .72,
+        point.y + Math.sin(angle + leaf.side * 1.35) * tendrilLength * .72
+      )
+      ctx.stroke()
+    }
+
+    if (branch.progress > .84) {
+      const reveal = clamp01((branch.progress - .84) / .16)
+      const size = (compact ? 58 : 84) * reveal
+      const sway = Math.sin(time * .001 + branch.index * 1.7) * .045 * reveal
+      ctx.save()
+      ctx.translate(branch.curve.end.x, branch.curve.end.y)
+      ctx.rotate(sway)
+      drawSunflowerHead(ctx, 0, 0, size, 0)
+      ctx.restore()
+    }
+    ctx.restore()
+  }
 }
 
 function drawButterfly(ctx, image, x, y, scale, angle, wing) {
@@ -347,7 +527,7 @@ function drawButterfly(ctx, image, x, y, scale, angle, wing) {
   ctx.restore()
 }
 
-function drawPen(ctx, x, y, scale, angle) {
+function drawQuill(ctx, x, y, scale, angle, time) {
   ctx.save()
   ctx.translate(x, y)
   ctx.rotate(angle)
@@ -356,47 +536,58 @@ function drawPen(ctx, x, y, scale, angle) {
   const ink = '#171510'
   ctx.fillStyle = ink
   ctx.strokeStyle = ink
-  ctx.lineWidth = 1.5
+  ctx.lineWidth = 1.4
   ctx.beginPath()
-  ctx.moveTo(-76, 4)
-  ctx.bezierCurveTo(-56, -24, -20, -28, 34, -9)
-  ctx.bezierCurveTo(5, -5, -20, 4, -70, 15)
-  ctx.bezierCurveTo(-59, 11, -49, 8, -36, 6)
-  ctx.bezierCurveTo(-50, 4, -63, 4, -76, 4)
+  ctx.moveTo(-18, 0)
+  ctx.bezierCurveTo(-54, -40, -111, -51, -166, -28)
+  ctx.bezierCurveTo(-151, -14, -148, -7, -158, 0)
+  ctx.bezierCurveTo(-143, 2, -137, 7, -148, 15)
+  ctx.bezierCurveTo(-126, 14, -116, 19, -126, 28)
+  ctx.bezierCurveTo(-94, 23, -67, 17, -18, 0)
   ctx.fill()
 
   ctx.strokeStyle = '#eee5cf'
-  ctx.globalAlpha = .8
+  ctx.globalAlpha = .72
   ctx.lineWidth = 1
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 7; i++) {
+    const root = -142 + i * 17
     ctx.beginPath()
-    ctx.moveTo(-56 + i * 13, 2)
-    ctx.lineTo(-42 + i * 13, -13 + i * .5)
+    ctx.moveTo(root, 1)
+    ctx.lineTo(root + 15, -18 - i * 1.1)
     ctx.stroke()
     ctx.beginPath()
-    ctx.moveTo(-52 + i * 13, 5)
-    ctx.lineTo(-37 + i * 13, 12 - i * .4)
+    ctx.moveTo(root + 3, 3)
+    ctx.lineTo(root + 18, 15 + i * .5)
     ctx.stroke()
   }
   ctx.globalAlpha = 1
 
   ctx.strokeStyle = '#7d5520'
-  ctx.lineWidth = 3
+  ctx.lineWidth = 3.2
   ctx.beginPath()
-  ctx.moveTo(-66, 7)
-  ctx.lineTo(62, 0)
+  ctx.moveTo(-154, 1)
+  ctx.quadraticCurveTo(-76, 5 + Math.sin(time * .002) * .7, -5, 0)
   ctx.stroke()
+
+  // The nib's point is exactly (0, 0), so it is the cursor rather than an ornament near it.
   ctx.fillStyle = '#b98a2d'
+  ctx.strokeStyle = '#171510'
   ctx.beginPath()
-  ctx.moveTo(62, 0)
-  ctx.lineTo(76, -5)
-  ctx.lineTo(70, 6)
+  ctx.moveTo(0, 0)
+  ctx.lineTo(-20, -8)
+  ctx.lineTo(-30, 0)
+  ctx.lineTo(-20, 8)
   ctx.closePath()
   ctx.fill()
+  ctx.stroke()
   ctx.fillStyle = ink
   ctx.beginPath()
-  ctx.arc(73, 0, 1.7, 0, Math.PI * 2)
+  ctx.arc(-15, 0, 2.2, 0, Math.PI * 2)
   ctx.fill()
+  ctx.beginPath()
+  ctx.moveTo(0, 0)
+  ctx.lineTo(-15, 0)
+  ctx.stroke()
   ctx.restore()
 }
 
@@ -411,10 +602,10 @@ function App() {
     let last = performance.now()
     let currentFont = ''
     let prepared = null
-    let bloom = 0
-    let bloomTarget = 0
-    const sunflowerHit = { x: 0, y: 0, radius: 60 }
-    const pointer = { x: innerWidth * .5, y: innerHeight * .45, tx: innerWidth * .5, ty: innerHeight * .45, active: false, angle: -.08 }
+    let growth = 0
+    let growthTarget = 0
+    const seedHit = { x: 0, y: 0, radius: 28 }
+    const pointer = { x: innerWidth * .5, y: innerHeight * .45, tx: innerWidth * .5, ty: innerHeight * .45, active: false }
 
     const imagesPromise = Promise.all([
       loadImage(`${import.meta.env.BASE_URL}sunflower.svg`),
@@ -444,8 +635,8 @@ function App() {
     }
     const press = event => {
       setPointer(event.clientX, event.clientY)
-      const distance = Math.hypot(event.clientX - sunflowerHit.x, event.clientY - sunflowerHit.y)
-      if (distance <= sunflowerHit.radius) bloomTarget = 1
+      const distance = Math.hypot(event.clientX - seedHit.x, event.clientY - seedHit.y)
+      if (distance <= seedHit.radius) growthTarget = 1
     }
 
     addEventListener('resize', resize)
@@ -491,28 +682,23 @@ function App() {
           pointer.tx = page.left + page.width * .58 + Math.sin(now * .00027) * page.width * .12
           pointer.ty = bodyTop + (bodyBottom - bodyTop) * .42 + Math.cos(now * .00021) * 46
         }
-        const pointerDx = pointer.tx - pointer.x
-        const pointerDy = pointer.ty - pointer.y
         pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * .008)
         pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * .008)
-        const targetAngle = Math.atan2(pointerDy, pointerDx || 1) * .12 - .08
-        pointer.angle += (targetAngle - pointer.angle) * .12
 
-        bloom += (bloomTarget - bloom) * Math.min(1, dt * .0048)
-        const bloomEase = 1 - Math.pow(1 - bloom, 3)
-        const sunflowerFinalScale = compact ? .52 : .68
-        const sunflowerScale = sunflowerFinalScale * bloomEase
-        const sunflowerX = textRight - (compact ? 16 : 24)
-        const sunflowerBottom = bodyBottom + 8
-        const sunflowerShape = {
-          x: sunflowerX,
-          y: sunflowerBottom - 132 * sunflowerScale,
-          rx: Math.max(8, 86 * sunflowerScale),
-          ry: Math.max(12, 132 * sunflowerScale)
+        if (growthTarget) growth = Math.min(1, growth + dt * .00012)
+        const seed = {
+          x: (textLeft + textRight) / 2,
+          y: bodyTop + (bodyBottom - bodyTop) * .52
         }
-        sunflowerHit.x = sunflowerX
-        sunflowerHit.y = bloomTarget ? sunflowerBottom - 92 * sunflowerFinalScale : sunflowerBottom - 7
-        sunflowerHit.radius = bloomTarget ? (compact ? 54 : 68) : 24
+        seedHit.x = seed.x
+        seedHit.y = seed.y
+        seedHit.radius = growthTarget ? (compact ? 18 : 22) : (compact ? 25 : 29)
+        const garden = buildGarden(seed, {
+          left: textLeft,
+          right: textRight,
+          top: bodyTop,
+          bottom: bodyBottom
+        }, growth, compact)
 
         const butterflyShape = {
           x: page.left + page.width * (.47 + Math.cos(now * .00042) * .28),
@@ -520,14 +706,15 @@ function App() {
           rx: compact ? 31 : 42,
           ry: compact ? 22 : 29
         }
-        const penLength = compact ? 88 : 128
-        const penShapes = Array.from({ length: 6 }, (_, index) => {
-          const t = index / 5 - .5
+        const quillAngle = -.23 + Math.sin(now * .0011) * .018
+        const quillLength = compact ? 104 : 144
+        const quillShapes = Array.from({ length: 8 }, (_, index) => {
+          const t = index / 7
           return {
-            x: pointer.x + Math.cos(pointer.angle) * penLength * t,
-            y: pointer.y + Math.sin(pointer.angle) * penLength * t,
-            rx: compact ? 13 : 18,
-            ry: compact ? 11 : 15
+            x: pointer.x - Math.cos(quillAngle) * quillLength * t,
+            y: pointer.y - Math.sin(quillAngle) * quillLength * t,
+            rx: (compact ? 9 : 13) + Math.sin(t * Math.PI) * (compact ? 7 : 10),
+            ry: (compact ? 8 : 11) + Math.sin(t * Math.PI) * (compact ? 5 : 8)
           }
         })
         const dropCapRect = {
@@ -536,7 +723,7 @@ function App() {
           width: compact ? 86 : 112,
           height: lineHeight * (compact ? 6.6 : 7)
         }
-        const shapes = [...penShapes, butterflyShape, sunflowerShape]
+        const shapes = [...quillShapes, butterflyShape, ...garden.shapes]
 
         drawPaper(ctx, width, height, now, page)
 
@@ -575,9 +762,9 @@ function App() {
 
         drawOrnateDropCap(ctx, dropCapRect, compact)
 
-        drawBloomingSunflower(ctx, sunflower, sunflowerX, sunflowerBottom, sunflowerFinalScale, bloom, now)
+        drawGarden(ctx, sunflower, garden, compact, now)
         drawButterfly(ctx, butterfly, butterflyShape.x, butterflyShape.y, compact ? .53 : .68, Math.sin(now * .0009) * .25, .5 + Math.sin(now * .013) * .5)
-        drawPen(ctx, pointer.x, pointer.y, compact ? .62 : .82, pointer.angle)
+        drawQuill(ctx, pointer.x, pointer.y, compact ? .62 : .82, quillAngle, now)
 
         ctx.save()
         ctx.fillStyle = '#2a1a0a'
