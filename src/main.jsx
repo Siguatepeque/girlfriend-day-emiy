@@ -3,21 +3,21 @@ import { createRoot } from 'react-dom/client'
 import { layoutNextLine, prepareWithSegments } from '@chenglou/pretext'
 import './styles.css'
 
-const LETTER = `My dearest Emiy—Some people arrive like weather. You arrived like a season I did not know I had been waiting for: warm at the edges, full of small signs, making ordinary rooms feel newly lit.
+const LETTER = `Emiy, you are a sunflower in my life. You keep turning me back toward the light, even on days when I forget where it is. Thank you for guiding me there in your own way, with your smile, your chaos, your mischief, and the way you make ordinary moments feel alive.
 
-I love the easy things first. Your laugh when you forget to be careful with it. The face you make when you are concentrating. The way a quiet moment beside you does not ask to be filled. I love how a day becomes more itself after I have told you about it.
+I love your smile. I love how it changes the whole mood of a room for me. I love the way your mischievous side makes me laugh before I even mean to. You can turn a normal moment into a story I want to remember, usually with one look or one perfectly timed comment.
 
-There is a sunflower habit I think we share. They do not chase every light. They choose one, turn toward it, and keep turning as the hours change. Loving you feels less like being struck by lightning and more like learning that faithful motion: again, gently, toward you.
+You are fun, chaotic, interesting, and so completely yourself. I love that about you. Life with you never feels flat. There is always a little surprise, a strange idea, a joke, or some tiny adventure waiting around the corner. Even when things are messy, you bring a kind of brightness that feels honest and real.
 
-Thank you for the softness you protect in a loud world. Thank you for every kindness that nobody applauds, for your patience, for your mischief, for the thousand tiny ways you make care feel practical. You make affection feel less like a grand speech and more like water placed beside the bed.
+Thank you for sharing all of that with me. Thank you for letting me know your softer side, your silly side, your stubborn side, and all the little details that make you Emiy. I do not need perfect. I love real. And with you, real feels bright.
 
-If this were a proper old tale, I would promise kingdoms. I would cross the briar wood, bargain with the moon, and return with a sword that sings your name. But I like our smaller magic better: shared jokes, familiar silences, a hand finding another hand without looking.
+I appreciate the way you care. I appreciate your presence, the sound of your laugh, and the calm that sometimes appears right in the middle of our chaos. I appreciate that I get to keep learning you. There are always new details, and I never get tired of noticing them.
 
-You are not precious because you are perfect. You are precious because you are particular. There is only one exact way you notice things, one exact cadence to your joy, one exact person I mean when I say that the world is better with you in it.
+Sunflowers turn toward the light, and somehow you help me do the same. You remind me to look up, to laugh, and to enjoy what is right in front of me. You make the good days warmer, and you make the difficult days feel less heavy just by being there.
 
-So let this page grow unruly for you. Let the flowers interrupt the sentences. Let the moth misplace a word. Let every line make room for something alive. That is what love has done to my life: not emptied it into neatness, but filled it so completely that everything else learned how to move around you.
+Thank you for being playful with me. Thank you for being interesting, surprising, sweet, and wonderfully chaotic. Thank you for giving me so many reasons to smile. I hope I can give some of that light back to you, in the small ways that matter.
 
-Happy Girlfriend Day, Emiy. I hope you always know that you are seen, chosen, appreciated, and loved—not just in the bright scenes, but in all the ordinary paragraphs between them. Yours, in every season.`
+Happy Girlfriend Day, Emiy. I love you. Thank you for being one of the brightest things in my life. I am very lucky that I get to share this strange, fun, beautiful little world with you.`
 
 const FONT_STACK = 'Georgia, "Times New Roman", serif'
 
@@ -54,6 +54,122 @@ function carve(slots, block) {
   return result
 }
 
+function drawTinyStar(ctx, x, y, radius, color = '#a76f1d', rotation = 0) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(rotation)
+  ctx.beginPath()
+  for (let i = 0; i < 8; i++) {
+    const angle = -Math.PI / 2 + i * Math.PI / 4
+    const length = i % 2 === 0 ? radius : radius * .28
+    const px = Math.cos(angle) * length
+    const py = Math.sin(angle) * length
+    if (i === 0) ctx.moveTo(px, py)
+    else ctx.lineTo(px, py)
+  }
+  ctx.closePath()
+  ctx.fillStyle = color
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawLeaf(ctx, x, y, angle, scale = 1, color = '#516039') {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(angle)
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.moveTo(0, 0)
+  ctx.bezierCurveTo(7 * scale, -7 * scale, 17 * scale, -5 * scale, 21 * scale, 0)
+  ctx.bezierCurveTo(13 * scale, 7 * scale, 6 * scale, 6 * scale, 0, 0)
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(44,61,35,.72)'
+  ctx.lineWidth = .7
+  ctx.beginPath()
+  ctx.moveTo(2 * scale, 0)
+  ctx.lineTo(18 * scale, 0)
+  ctx.stroke()
+  ctx.restore()
+}
+
+function drawVine(ctx, x, y, length, direction = 1) {
+  ctx.save()
+  ctx.strokeStyle = 'rgba(62,80,43,.58)'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(x, y)
+  ctx.bezierCurveTo(x + direction * 11, y + length * .23, x - direction * 8, y + length * .66, x + direction * 5, y + length)
+  ctx.stroke()
+  for (let i = 1; i <= 4; i++) {
+    const py = y + length * (i / 5)
+    const px = x + Math.sin(i * 1.7) * 4
+    drawLeaf(ctx, px, py, i % 2 ? -.45 : Math.PI + .45, .42, i % 2 ? '#5f6d3e' : '#6f7942')
+  }
+  ctx.restore()
+}
+
+function drawIlluminatedCorner(ctx, x, y, flipX, flipY) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(flipX, flipY)
+  ctx.globalAlpha = .42
+  ctx.strokeStyle = '#9f6e25'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, 22)
+  ctx.quadraticCurveTo(4, 3, 23, 0)
+  ctx.quadraticCurveTo(8, 9, 16, 23)
+  ctx.stroke()
+  drawLeaf(ctx, 7, 8, -.72, .34, '#7a5430')
+  drawLeaf(ctx, 14, 4, -.25, .28, '#5e6a3b')
+  ctx.restore()
+}
+
+function drawSunEmblem(ctx, x, y, scale = 1) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.strokeStyle = '#a86e1c'
+  ctx.fillStyle = '#d69a23'
+  ctx.lineWidth = 1
+  for (let i = 0; i < 12; i++) {
+    const angle = i * Math.PI / 6
+    ctx.beginPath()
+    ctx.moveTo(Math.cos(angle) * 8 * scale, Math.sin(angle) * 8 * scale)
+    ctx.lineTo(Math.cos(angle) * 12 * scale, Math.sin(angle) * 12 * scale)
+    ctx.stroke()
+  }
+  ctx.beginPath()
+  ctx.arc(0, 0, 5.5 * scale, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(0, 0, 2.2 * scale, 0, Math.PI * 2)
+  ctx.fillStyle = '#69421e'
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawIlluminatedCapital(ctx, y, compact) {
+  const centerX = compact ? 37 : 47
+  const width = compact ? 27 : 39
+  const height = compact ? 42 : 54
+  ctx.save()
+  ctx.translate(centerX, y + height / 2)
+  ctx.fillStyle = 'rgba(169,111,29,.11)'
+  ctx.strokeStyle = '#aa711f'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.roundRect(-width / 2, -height / 2, width, height, 4)
+  ctx.fill()
+  ctx.stroke()
+  drawTinyStar(ctx, 0, -height / 2 + 7, compact ? 2.5 : 3, '#a34731', Math.PI / 4)
+  ctx.fillStyle = '#973e2f'
+  ctx.font = `${compact ? 32 : 43}px Georgia`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('E', 0, 5)
+  ctx.restore()
+}
+
 function drawPaper(ctx, width, height, time) {
   ctx.fillStyle = '#eee3c5'
   ctx.fillRect(0, 0, width, height)
@@ -80,12 +196,20 @@ function drawPaper(ctx, width, height, time) {
   ctx.lineWidth = .8
   ctx.strokeRect(27, 27, width - 54, height - 54)
 
-  ctx.fillStyle = '#9a3d2d'
-  ctx.font = '26px Georgia'
-  ctx.fillText('❦', 23, 43)
-  ctx.save(); ctx.translate(width - 23, 43); ctx.scale(-1, 1); ctx.fillText('❦', 0, 0); ctx.restore()
-  ctx.save(); ctx.translate(23, height - 25); ctx.scale(1, -1); ctx.fillText('❦', 0, 0); ctx.restore()
-  ctx.save(); ctx.translate(width - 23, height - 25); ctx.scale(-1, -1); ctx.fillText('❦', 0, 0); ctx.restore()
+  drawIlluminatedCorner(ctx, 27, 27, 1, 1)
+  drawIlluminatedCorner(ctx, width - 27, 27, -1, 1)
+  drawIlluminatedCorner(ctx, 27, height - 27, 1, -1)
+  drawIlluminatedCorner(ctx, width - 27, height - 27, -1, -1)
+
+  drawVine(ctx, 31, height * .25, Math.min(155, height * .2), 1)
+  drawVine(ctx, width - 31, height * .58, Math.min(145, height * .18), -1)
+
+  ctx.fillStyle = 'rgba(152,72,43,.56)'
+  for (const [x, y, size] of [[36, height * .49, 1.5], [width - 37, height * .34, 1.3], [43, height * .72, 1], [width - 42, height * .8, 1]]) {
+    ctx.beginPath()
+    ctx.arc(x, y, size, 0, Math.PI * 2)
+    ctx.fill()
+  }
 }
 
 function drawHeader(ctx, width, compact) {
@@ -116,6 +240,18 @@ function drawHeader(ctx, width, compact) {
   ctx.moveTo(44, top + (compact ? 64 : 53))
   ctx.lineTo(width - 44, top + (compact ? 64 : 53))
   ctx.stroke()
+
+  const emblemX = compact ? width - 57 : width - 62
+  const emblemY = top + (compact ? 48 : 34)
+  drawSunEmblem(ctx, emblemX, emblemY, compact ? .7 : .85)
+  drawTinyStar(ctx, compact ? 31 : 28, top + (compact ? 47 : 32), compact ? 3 : 4, '#a66f1f', .35)
+  drawTinyStar(ctx, compact ? width - 30 : width - 29, top + (compact ? 13 : 16), 2.4, '#92402e', .2)
+  ctx.fillStyle = '#a06b26'
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath()
+    ctx.arc((compact ? 40 : 43) + i * 8, top + (compact ? 62 : 51), 1.1 - i * .15, 0, Math.PI * 2)
+    ctx.fill()
+  }
 }
 
 function drawFooter(ctx, width, height, compact) {
@@ -123,7 +259,7 @@ function drawFooter(ctx, width, height, compact) {
   ctx.font = `${compact ? 8 : 10}px Georgia`
   ctx.textAlign = 'center'
   ctx.letterSpacing = '2.2px'
-  ctx.fillText(compact ? 'HAPPY GIRLFRIEND DAY  ·  EMIY  ·  FOLIO VIII' : 'HAPPY GIRLFRIEND DAY  ·  FIRST OF AUGUST  ·  ALWAYS TOWARD THE SUN', width / 2, height - 37)
+  ctx.fillText(compact ? 'HAPPY GIRLFRIEND DAY  ·  EMILY  ·  FOLIO VIII' : 'HAPPY GIRLFRIEND DAY  ·  FIRST OF AUGUST  ·  ALWAYS TOWARD THE SUN', width / 2, height - 37)
   ctx.textAlign = 'left'
   ctx.letterSpacing = '0px'
 }
@@ -217,7 +353,7 @@ function App() {
         const fontSize = compact ? Math.max(13, Math.min(16, width / 26)) : Math.max(16, Math.min(21, width / 70))
         const lineHeight = fontSize * (compact ? 1.48 : 1.56)
         const font = `${fontSize}px ${FONT_STACK}`
-        const margin = compact ? 42 : Math.max(54, width * .055)
+        const margin = compact ? 58 : Math.max(78, width * .055)
         const bodyTop = compact ? 151 : 150
         const bodyBottom = height - (compact ? 82 : 58)
 
@@ -276,6 +412,7 @@ function App() {
 
         drawPaper(ctx, width, height, now)
         drawHeader(ctx, width, compact)
+        drawIlluminatedCapital(ctx, bodyTop + 1, compact)
 
         ctx.save()
         ctx.font = font
@@ -283,7 +420,6 @@ function App() {
         ctx.fillStyle = '#302417'
         let cursor = { segmentIndex: 0, graphemeIndex: 0 }
         let y = bodyTop
-        let firstVisibleCharacter = true
 
         while (y + lineHeight <= bodyBottom) {
           let slots = [{ left: margin, right: width - margin }]
@@ -291,7 +427,8 @@ function App() {
             const interval = ellipseInterval(shape, y, y + lineHeight, compact ? 7 : 11)
             if (interval) slots = carve(slots, interval)
           }
-          slots = slots.filter(slot => slot.right - slot.left > fontSize * 3.3)
+          const minimumSlotWidth = fontSize * (compact ? 7.5 : 3.3)
+          slots = slots.filter(slot => slot.right - slot.left > minimumSlotWidth)
           if (!slots.length) { y += lineHeight; continue }
 
           let exhausted = false
@@ -299,20 +436,8 @@ function App() {
             const line = layoutNextLine(prepared, cursor, slot.right - slot.left)
             if (!line) { exhausted = true; break }
 
-            if (firstVisibleCharacter && line.text.trim()) {
-              const first = line.text.trimStart()[0]
-              ctx.save()
-              ctx.fillStyle = '#9a3d2d'
-              ctx.font = `${fontSize * 3.15}px Georgia`
-              ctx.fillText(first, slot.left, y - fontSize * .2)
-              ctx.restore()
-              const remainder = line.text.replace(first, '')
-              ctx.fillText(remainder, slot.left + fontSize * 2.6, y)
-              firstVisibleCharacter = false
-            } else {
-              ctx.fillStyle = '#302417'
-              ctx.fillText(line.text, slot.left, y)
-            }
+            ctx.fillStyle = '#302417'
+            ctx.fillText(line.text, slot.left, y)
             cursor = line.end
           }
           if (exhausted) break
