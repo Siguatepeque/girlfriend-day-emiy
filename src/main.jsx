@@ -3,13 +3,13 @@ import { createRoot } from 'react-dom/client'
 import { layoutNextLine, prepareWithSegments } from '@chenglou/pretext'
 import './styles.css'
 
-const LETTER = `Emiy, you are a sunflower in my life. You keep turning me back toward the light, even on days when I forget where it is. Thank you for guiding me there in your own way, with your smile, your chaos, your mischief, and the way you make ordinary moments feel alive.
+const LETTER = `Emily, you are a sunflower in my life. You keep turning me back toward the light, even on days when I forget where it is. Thank you for guiding me there in your own way, with your smile, your chaos, your mischief, and the way you make ordinary moments feel alive.
 
 I love your smile. I love how it changes the whole mood of a room for me. I love the way your mischievous side makes me laugh before I even mean to. You can turn a normal moment into a story I want to remember, usually with one look or one perfectly timed comment.
 
 You are fun, chaotic, interesting, and so completely yourself. I love that about you. Life with you never feels flat. There is always a little surprise, a strange idea, a joke, or some tiny adventure waiting around the corner. Even when things are messy, you bring a kind of brightness that feels honest and real.
 
-Thank you for sharing all of that with me. Thank you for letting me know your softer side, your silly side, your stubborn side, and all the little details that make you Emiy. I do not need perfect. I love real. And with you, real feels bright.
+Thank you for sharing all of that with me. Thank you for letting me know your softer side, your silly side, your stubborn side, and all the little details that make you Emily. I do not need perfect. I love real. And with you, real feels bright.
 
 I appreciate the way you care. I appreciate your presence, the sound of your laugh, and the calm that sometimes appears right in the middle of our chaos. I appreciate that I get to keep learning you. There are always new details, and I never get tired of noticing them.
 
@@ -17,9 +17,9 @@ Sunflowers turn toward the light, and somehow you help me do the same. You remin
 
 Thank you for being playful with me. Thank you for being interesting, surprising, sweet, and wonderfully chaotic. Thank you for giving me so many reasons to smile. I hope I can give some of that light back to you, in the small ways that matter.
 
-Happy Girlfriend Day, Emiy. I love you. Thank you for being one of the brightest things in my life. I am very lucky that I get to share this strange, fun, beautiful little world with you.`
+Happy Girlfriend Day, Emily. I love you. Thank you for being one of the brightest things in my life. I am very lucky that I get to share this strange, fun, beautiful little world with you.`
 
-const FONT_STACK = 'Georgia, "Times New Roman", serif'
+const FONT_STACK = '"IM FELL English", Georgia, "Times New Roman", serif'
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -39,6 +39,11 @@ function ellipseInterval(shape, bandTop, bandBottom, padding = 8) {
   if (nearestY >= ry) return null
   const extent = rx * Math.sqrt(1 - (nearestY * nearestY) / (ry * ry))
   return { left: shape.x - extent, right: shape.x + extent }
+}
+
+function rectInterval(rect, bandTop, bandBottom, padding = 0) {
+  if (bandBottom <= rect.y - padding || bandTop >= rect.y + rect.height + padding) return null
+  return { left: rect.x - padding, right: rect.x + rect.width + padding }
 }
 
 function carve(slots, block) {
@@ -148,35 +153,117 @@ function drawSunEmblem(ctx, x, y, scale = 1) {
   ctx.restore()
 }
 
-function drawIlluminatedCapital(ctx, y, compact) {
-  const centerX = compact ? 37 : 47
-  const width = compact ? 27 : 39
-  const height = compact ? 42 : 54
+function drawBorderRosette(ctx, x, y, scale, color) {
   ctx.save()
-  ctx.translate(centerX, y + height / 2)
-  ctx.fillStyle = 'rgba(169,111,29,.11)'
-  ctx.strokeStyle = '#aa711f'
-  ctx.lineWidth = 1
+  ctx.translate(x, y)
+  ctx.fillStyle = color
+  ctx.strokeStyle = '#48291d'
+  ctx.lineWidth = .7
+  for (let i = 0; i < 8; i++) {
+    ctx.save()
+    ctx.rotate(i * Math.PI / 4)
+    ctx.beginPath()
+    ctx.ellipse(0, -7 * scale, 2.8 * scale, 6 * scale, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    ctx.restore()
+  }
   ctx.beginPath()
-  ctx.roundRect(-width / 2, -height / 2, width, height, 4)
+  ctx.arc(0, 0, 3.3 * scale, 0, Math.PI * 2)
+  ctx.fillStyle = '#d4a32b'
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawIlluminatedBand(ctx, width, height) {
+  const left = 34
+  const top = 112
+  const bottom = height - 44
+  ctx.save()
+  ctx.strokeStyle = '#b48726'
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.moveTo(left, top)
+  ctx.lineTo(left, bottom)
+  ctx.stroke()
+  ctx.lineWidth = 1
+  ctx.strokeStyle = '#244c64'
+  ctx.beginPath()
+  ctx.moveTo(left + 6, top + 4)
+  ctx.lineTo(left + 6, bottom - 4)
+  ctx.stroke()
+  for (let y = top + 8, i = 0; y < bottom - 8; y += 24, i++) {
+    ctx.fillStyle = i % 2 ? '#9b332d' : '#315b73'
+    ctx.fillRect(left - 3, y, 7, 11)
+    ctx.fillStyle = '#d1a32d'
+    ctx.beginPath()
+    ctx.arc(left + 7, y + 5.5, 2, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  drawBorderRosette(ctx, left + 2, top - 2, .72, '#9d352d')
+  drawBorderRosette(ctx, left + 2, bottom + 2, .72, '#315c70')
+  ctx.restore()
+}
+
+function drawOrnateDropCap(ctx, rect, compact) {
+  ctx.save()
+  const inset = compact ? 4 : 6
+  const centerX = rect.x + rect.width / 2
+  const centerY = rect.y + rect.height / 2
+  const wash = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height)
+  wash.addColorStop(0, 'rgba(236,197,80,.62)')
+  wash.addColorStop(.5, 'rgba(250,232,169,.7)')
+  wash.addColorStop(1, 'rgba(192,128,46,.48)')
+  ctx.fillStyle = wash
+  ctx.strokeStyle = '#872f28'
+  ctx.lineWidth = compact ? 2 : 3
+  ctx.beginPath()
+  ctx.roundRect(rect.x, rect.y, rect.width, rect.height, compact ? 5 : 7)
   ctx.fill()
   ctx.stroke()
-  drawTinyStar(ctx, 0, -height / 2 + 7, compact ? 2.5 : 3, '#a34731', Math.PI / 4)
-  ctx.fillStyle = '#973e2f'
-  ctx.font = `${compact ? 32 : 43}px Georgia`
+
+  ctx.strokeStyle = '#2d5268'
+  ctx.lineWidth = 1.3
+  ctx.strokeRect(rect.x + inset, rect.y + inset, rect.width - inset * 2, rect.height - inset * 2)
+  ctx.strokeStyle = '#c49a2b'
+  ctx.strokeRect(rect.x + inset + 4, rect.y + inset + 4, rect.width - inset * 2 - 8, rect.height - inset * 2 - 8)
+
+  ctx.strokeStyle = '#1d1a13'
+  ctx.lineWidth = compact ? 2 : 3
+  ctx.beginPath()
+  ctx.moveTo(rect.x + 12, rect.y + rect.height - 14)
+  ctx.bezierCurveTo(rect.x - 7, rect.y + rect.height * .72, rect.x + 5, rect.y + 25, rect.x + 24, rect.y + 14)
+  ctx.bezierCurveTo(rect.x + 37, rect.y + 3, rect.x + rect.width - 9, rect.y + 9, rect.x + rect.width - 14, rect.y + 28)
+  ctx.stroke()
+  drawLeaf(ctx, rect.x + 9, rect.y + rect.height * .68, -.82, compact ? .48 : .65, '#96362d')
+  drawLeaf(ctx, rect.x + rect.width - 18, rect.y + 20, 2.62, compact ? .4 : .55, '#2d5d6f')
+  drawLeaf(ctx, rect.x + 14, rect.y + rect.height - 24, -.35, compact ? .38 : .5, '#58703c')
+
+  drawTinyStar(ctx, rect.x + 15, rect.y + 15, compact ? 3 : 4, '#9e332c', Math.PI / 4)
+  drawTinyStar(ctx, rect.x + rect.width - 15, rect.y + rect.height - 15, compact ? 3 : 4, '#31596f', 0)
+  drawSunEmblem(ctx, rect.x + rect.width - 17, rect.y + 18, compact ? .45 : .58)
+
+  ctx.shadowColor = 'rgba(255,231,130,.65)'
+  ctx.shadowBlur = 2
+  ctx.lineWidth = compact ? 1.2 : 1.8
+  ctx.strokeStyle = '#d4ad42'
+  ctx.fillStyle = '#17140f'
+  ctx.font = `700 ${rect.height * (compact ? .67 : .7)}px "UnifrakturCook", Georgia, serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('E', 0, 5)
+  ctx.strokeText('E', centerX, centerY + rect.height * .04)
+  ctx.fillText('E', centerX, centerY + rect.height * .04)
+  ctx.shadowBlur = 0
   ctx.restore()
 }
 
 function drawPaper(ctx, width, height, time) {
-  ctx.fillStyle = '#eee3c5'
+  ctx.fillStyle = '#eee5cf'
   ctx.fillRect(0, 0, width, height)
 
   const glow = ctx.createRadialGradient(width * .48, height * .35, 20, width * .48, height * .35, width * .7)
-  glow.addColorStop(0, 'rgba(255,252,226,.78)')
-  glow.addColorStop(1, 'rgba(126,84,31,.08)')
+  glow.addColorStop(0, 'rgba(255,251,226,.72)')
+  glow.addColorStop(1, 'rgba(111,74,31,.12)')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, width, height)
 
@@ -189,17 +276,24 @@ function drawPaper(ctx, width, height, time) {
   }
   ctx.restore()
 
-  ctx.strokeStyle = '#8c3b2c'
-  ctx.lineWidth = 1.35
-  ctx.strokeRect(20, 20, width - 40, height - 40)
-  ctx.strokeStyle = 'rgba(164,106,30,.8)'
-  ctx.lineWidth = .8
-  ctx.strokeRect(27, 27, width - 54, height - 54)
+  ctx.fillStyle = 'rgba(180,136,38,.18)'
+  ctx.fillRect(15, 15, width - 30, 13)
+  ctx.fillRect(15, height - 28, width - 30, 13)
+  ctx.strokeStyle = '#792e28'
+  ctx.lineWidth = 2
+  ctx.strokeRect(16, 16, width - 32, height - 32)
+  ctx.strokeStyle = '#b88c28'
+  ctx.lineWidth = 3
+  ctx.strokeRect(23, 23, width - 46, height - 46)
+  ctx.strokeStyle = '#31566d'
+  ctx.lineWidth = 1
+  ctx.strokeRect(29, 29, width - 58, height - 58)
 
-  drawIlluminatedCorner(ctx, 27, 27, 1, 1)
-  drawIlluminatedCorner(ctx, width - 27, 27, -1, 1)
-  drawIlluminatedCorner(ctx, 27, height - 27, 1, -1)
-  drawIlluminatedCorner(ctx, width - 27, height - 27, -1, -1)
+  drawIlluminatedCorner(ctx, 30, 30, 1, 1)
+  drawIlluminatedCorner(ctx, width - 30, 30, -1, 1)
+  drawIlluminatedCorner(ctx, 30, height - 30, 1, -1)
+  drawIlluminatedCorner(ctx, width - 30, height - 30, -1, -1)
+  drawIlluminatedBand(ctx, width, height)
 
   drawVine(ctx, 31, height * .25, Math.min(155, height * .2), 1)
   drawVine(ctx, width - 31, height * .58, Math.min(145, height * .18), -1)
@@ -216,9 +310,9 @@ function drawHeader(ctx, width, compact) {
   const top = compact ? 49 : 52
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = '#7f3a2c'
-  ctx.font = `${compact ? 10 : 11}px Georgia`
+  ctx.font = `${compact ? 10 : 12}px "IM FELL English", Georgia, serif`
   ctx.letterSpacing = compact ? '2px' : '3px'
-  ctx.fillText('A FIELD GUIDE TO BRIGHT THINGS', 44, top)
+  ctx.fillText(compact ? 'AN ILLUMINATED LETTER' : 'AN ILLUMINATED LETTER OF BRIGHT THINGS', 48, top)
   if (!compact) {
     ctx.textAlign = 'right'
     ctx.fillText('FOLIO · VIII', width - 44, top)
@@ -226,19 +320,20 @@ function drawHeader(ctx, width, compact) {
   ctx.textAlign = 'left'
   ctx.letterSpacing = '0px'
 
-  ctx.fillStyle = '#263c2c'
-  ctx.font = `italic ${compact ? 19 : 31}px Georgia`
+  ctx.fillStyle = '#17150f'
+  ctx.font = `700 ${compact ? 25 : 40}px "UnifrakturCook", Georgia, serif`
   if (compact) {
-    ctx.fillText('for Emiy, who makes', 44, top + 28)
-    ctx.fillText('the ordinary luminous', 44, top + 51)
+    ctx.fillText('For Emily,', 48, top + 31)
+    ctx.font = `italic 18px "IM FELL English", Georgia, serif`
+    ctx.fillText('who turns me toward the light', 48, top + 54)
   } else {
-    ctx.fillText('for Emiy, who makes the ordinary luminous', 44, top + 39)
+    ctx.fillText('For Emily, who turns me toward the light', 48, top + 43)
   }
 
   ctx.strokeStyle = '#ad741e'
   ctx.beginPath()
-  ctx.moveTo(44, top + (compact ? 64 : 53))
-  ctx.lineTo(width - 44, top + (compact ? 64 : 53))
+  ctx.moveTo(48, top + (compact ? 68 : 58))
+  ctx.lineTo(width - 48, top + (compact ? 68 : 58))
   ctx.stroke()
 
   const emblemX = compact ? width - 57 : width - 62
@@ -256,10 +351,10 @@ function drawHeader(ctx, width, compact) {
 
 function drawFooter(ctx, width, height, compact) {
   ctx.fillStyle = '#815130'
-  ctx.font = `${compact ? 8 : 10}px Georgia`
+  ctx.font = `${compact ? 9 : 11}px "IM FELL English", Georgia, serif`
   ctx.textAlign = 'center'
   ctx.letterSpacing = '2.2px'
-  ctx.fillText(compact ? 'HAPPY GIRLFRIEND DAY  ·  EMILY  ·  FOLIO VIII' : 'HAPPY GIRLFRIEND DAY  ·  FIRST OF AUGUST  ·  ALWAYS TOWARD THE SUN', width / 2, height - 37)
+  ctx.fillText(compact ? 'EMILY  ·  GIRLFRIEND DAY  ·  VIII' : 'HAPPY GIRLFRIEND DAY  ·  EMILY  ·  ALWAYS TOWARD THE SUN', width / 2, height - 38)
   ctx.textAlign = 'left'
   ctx.letterSpacing = '0px'
 }
@@ -309,7 +404,8 @@ function App() {
     const imagesPromise = Promise.all([
       loadImage(`${import.meta.env.BASE_URL}sunflower.svg`),
       loadImage(`${import.meta.env.BASE_URL}moth.svg`),
-      loadImage(`${import.meta.env.BASE_URL}heart-charm.svg`)
+      loadImage(`${import.meta.env.BASE_URL}heart-charm.svg`),
+      document.fonts.ready
     ])
 
     const resize = () => {
@@ -350,15 +446,15 @@ function App() {
         const width = innerWidth
         const height = innerHeight
         const compact = width < 650
-        const fontSize = compact ? Math.max(13, Math.min(16, width / 26)) : Math.max(16, Math.min(21, width / 70))
-        const lineHeight = fontSize * (compact ? 1.48 : 1.56)
+        const fontSize = compact ? Math.max(14, Math.min(17, width / 24)) : Math.max(18, Math.min(23, width / 66))
+        const lineHeight = fontSize * (compact ? 1.42 : 1.48)
         const font = `${fontSize}px ${FONT_STACK}`
-        const margin = compact ? 58 : Math.max(78, width * .055)
-        const bodyTop = compact ? 151 : 150
+        const margin = compact ? 48 : Math.max(72, width * .052)
+        const bodyTop = compact ? 155 : 162
         const bodyBottom = height - (compact ? 82 : 58)
 
         if (font !== currentFont) {
-          prepared = prepareWithSegments(LETTER, font, { whiteSpace: 'pre-wrap' })
+          prepared = prepareWithSegments(LETTER.slice(1), font, { whiteSpace: 'pre-wrap' })
           currentFont = font
         }
 
@@ -388,6 +484,12 @@ function App() {
           rx: compact ? 31 : 43,
           ry: compact ? 42 : 58
         }
+        const dropCapRect = {
+          x: margin,
+          y: bodyTop,
+          width: compact ? 86 : 126,
+          height: lineHeight * (compact ? 5.1 : 5.35)
+        }
         const shapes = [bouquet, mothShape, charmShape]
 
         if (down && Math.random() < .34) {
@@ -412,7 +514,6 @@ function App() {
 
         drawPaper(ctx, width, height, now)
         drawHeader(ctx, width, compact)
-        drawIlluminatedCapital(ctx, bodyTop + 1, compact)
 
         ctx.save()
         ctx.font = font
@@ -427,6 +528,8 @@ function App() {
             const interval = ellipseInterval(shape, y, y + lineHeight, compact ? 7 : 11)
             if (interval) slots = carve(slots, interval)
           }
+          const dropCapInterval = rectInterval(dropCapRect, y, y + lineHeight, compact ? 7 : 10)
+          if (dropCapInterval) slots = carve(slots, dropCapInterval)
           const minimumSlotWidth = fontSize * (compact ? 7.5 : 3.3)
           slots = slots.filter(slot => slot.right - slot.left > minimumSlotWidth)
           if (!slots.length) { y += lineHeight; continue }
@@ -444,6 +547,8 @@ function App() {
           y += lineHeight
         }
         ctx.restore()
+
+        drawOrnateDropCap(ctx, dropCapRect, compact)
 
         const sway = Math.sin(now * .0013) * .045
         drawSunflower(ctx, sunflower, bouquet.x - 52 * bouquetScale, bouquet.y + 7, bouquetScale * .8, sway - .14, true)
@@ -483,7 +588,7 @@ function App() {
 
   return (
     <main className="experience">
-      <canvas ref={canvasRef} aria-label="An animated illustrated love letter for Emiy" />
+      <canvas ref={canvasRef} aria-label="An animated illustrated love letter for Emily" />
       <div className="instruction"><i /> move the flowers · hold to scatter petals</div>
       <div className="signature">written in sunlight <span>☼</span></div>
     </main>
